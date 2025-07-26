@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cute Kitten Animation với Âm Thanh</title>
+    <!-- Load GIF.js properly -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--bg-gradient, linear-gradient(45deg, #ffb3d9, #fff0f8, #ffe6f2, #ffffff));
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Setup Mode Styles */
+        .setup-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
+            text-align: center;
+            z-index: 100;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .setup-title {
+            color: #ff69b4;
+            font-size: 22px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* Drag and Drop Preview Area */
+        .preview-area {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #ffb3d9;
+            border-radius: 15px;
+            margin: 15px 0;
+            background: rgba(255, 182, 217, 0.1);
+            overflow: hidden;
+            cursor: default;
+            touch-action: none;
+        }
+
+        .draggable-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transition: none;
+            z-index: 10;
+            touch-action: none;
+        }
+
+        .draggable-element.dragging {
+            opacity: 0.8;
+            z-index: 20;
+            cursor: grabbing;
+        }
+
+        .draggable-element.scaling {
+            border: 2px dashed #ff69b4;
+            background: rgba(255, 105, 180, 0.1);
+        }
+
+        .draggable-kitten {
+            width: 60px;
+            height: 60px;
+            font-size: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .draggable-kitten img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .draggable-message {
+            background: #ff69b4;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .draggable-effect {
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .element-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 20, 147, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .size-indicator {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: none;
+        }
+
+        /* Sound Controls */
+        .sound-controls {
+            background: rgba(255, 182, 217, 0.1);
+            border: 1px solid #ffb3d9;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .sound-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #ff69b4;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 27px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ffb3d9;
+            outline: none;
+            border-radius: 5px;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #ff1493;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .form-group {
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            color: #ff69b4;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffb3d9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffb3d9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .color-picker-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-input {
+            width: 40px;
+            height: 35px;
+            border: 2px solid #ffb3d9;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .color-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .text-customization {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .position-info {
+            background: rgba(255, 182, 217, 0.1);
+            border: 1px solid #ffb3d9;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .file-button {
+            width: 100%;
+            background: linear-gradient(45deg, #ff69b4, #ffb3d9);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .file-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
+        }
+
+        .file-status {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .start-button {
+            width: 100%;
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 20, 147, 0.4);
+        }
+
+        .start-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Animation Styles */
+        .kitten-container {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            filter: drop-shadow(0 10px 20px rgba(255, 182, 193, 0.3));
+            display: none;
+        }
+
+        .kitten, .emoji-kitten {
+            width: 100%;
+            height: auto;
+            position: absolute;
+        }
+
+        .emoji-kitten {
+            font-size: 160px;
+            width: auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 0;
+            left: 0;
+        }
+
+        /* Animation timings - Total animation time ~8-9 seconds */
+        /* Message appears at 8.5 seconds */
+        
+        /* Animation 1: Jump and Flower */
+        .anim-jump {
+            animation: jumpAndMove 6s ease-in-out forwards;
+        }
+
+        @keyframes jumpAndMove {
+            0% {
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+            15% {
+                transform: translateX(-50%) translateY(-50px) scale(1.1);
+            }
+            30% {
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+            45% {
+                transform: translateX(-50%) translateY(-40px) scale(1.1);
+            }
+            60% {
+                transform: translateX(-50%) translateY(0) scale(1.4);
+            }
+            80% {
+                transform: translateX(-50%) translateY(0) scale(2);
+            }
+            100% {
+                transform: translateX(-50%) translateY(0) scale(2.5);
+            }
+        }
+
+        /* Animation 2: Spin */
+        .anim-spin {
+            animation: spinFast 6s ease-in-out forwards;
+        }
+
+        @keyframes spinFast {
+            0% {
+                transform: translateX(-50%) rotate(0deg) scale(1);
+            }
+            20% {
+                transform: translateX(-50%) rotate(720deg) scale(1.2);
+            }
+            40% {
+                transform: translateX(-50%) rotate(1440deg) scale(1.5);
+            }
+            60% {
+                transform: translateX(-50%) rotate(2160deg) scale(1.8);
+            }
+            80% {
+                transform: translateX(-50%) rotate(2880deg) scale(2.2);
+            }
+            100% {
+                transform: translateX(-50%) rotate(3600deg) scale(2.5);
+            }
+        }
+
+        /* Animation 3: Kiss */
+        .anim-kiss {
+            animation: kissAppear 6s ease-in-out forwards;
+        }
+
+        @keyframes kissAppear {
+            0% {
+                transform: translateX(-50%) scale(0);
+                opacity: 0;
+            }
+            30% {
+                transform: translateX(-50%) scale(1.5);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) scale(2);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) scale(2.5);
+                opacity: 1;
+            }
+        }
+
+        /* Animation 4: Confused */
+        .anim-confused {
+            animation: confusedMove 6s ease-in-out forwards;
+        }
+
+        @keyframes confusedMove {
+            0% {
+                transform: translateX(-50%) translateY(0) scale(1);
+                opacity: 0;
+            }
+            20% {
+                transform: translateX(-50%) translateY(-20px) scale(1.2);
+                opacity: 1;
+            }
+            40% {
+                transform: translateX(-50%) translateY(20px) scale(1.5);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-10px) scale(1.8);
+            }
+            80% {
+                transform: translateX(-50%) translateY(10px) scale(2.2);
+            }
+            100% {
+                transform: translateX(-50%) translateY(0) scale(2.5);
+            }
+        }
+
+        /* Animation 5: Explode */
+        .anim-explode {
+            animation: explodeShake 6s ease-in-out forwards;
+        }
+
+        @keyframes explodeShake {
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+            10% {
+                transform: translateX(-52%) scale(1.1);
+            }
+            20% {
+                transform: translateX(-48%) scale(1.2);
+            }
+            30% {
+                transform: translateX(-51%) scale(1.3);
+            }
+            40% {
+                transform: translateX(-49%) scale(1.5);
+            }
+            50% {
+                transform: translateX(-50%) scale(2);
+            }
+            100% {
+                transform: translateX(-50%) scale(2.5);
+            }
+        }
+
+        .effect-element {
+            position: absolute;
+            font-size: 60px;
+            opacity: 0;
+            display: none;
+        }
+
+        .effect-element.show {
+            display: block;
+        }
+
+        /* Flower effect for jump animation */
+        .effect-flower {
+            animation: flowerAppear 2s ease-in-out 4s forwards;
+        }
+
+        @keyframes flowerAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        /* Kiss effect */
+        .effect-kiss {
+            animation: kissEffect 3s ease-in-out 3s forwards;
+        }
+
+        @keyframes kissEffect {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.5);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(2);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        /* Confused effect */
+        .effect-confused {
+            animation: confusedEffect 4s ease-in-out 2s forwards;
+        }
+
+        @keyframes confusedEffect {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            25% {
+                opacity: 1;
+                transform: scale(1.2) rotate(-10deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.5) rotate(10deg);
+            }
+            75% {
+                opacity: 1;
+                transform: scale(1.8) rotate(-5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(2) rotate(0deg);
+            }
+        }
+
+        /* Explosion effect */
+        .effect-explode {
+            animation: explosionEffect 4s ease-in-out 2s forwards;
+            z-index: 5;
+        }
+
+        @keyframes explosionEffect {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            20% {
+                opacity: 1;
+                transform: scale(2);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(3);
+            }
+            100% {
+                opacity: 0.3;
+                transform: scale(4);
+            }
+        }
+
+        .message {
+            position: absolute;
+            transform: translateX(-50%);
+            font-size: 28px;
+            text-align: center;
+            opacity: 0;
+            text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.5);
+            font-weight: bold;
+            display: none;
+            z-index: 100; /* Ensure message is always on top */
+        }
+
+        .message.show {
+            display: block;
+            animation: messageAppear 2s ease-in-out forwards;
+        }
+
+        @keyframes messageAppear {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-10px) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+        }
+
+        /* Ensure message always visible */
+        .message.show {
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        /* Export Mode Styles */
+        .export-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
+            text-align: center;
+            z-index: 100;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .export-title {
+            color: #ff69b4;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .export-button {
+            width: 100%;
+            background: linear-gradient(45deg, #32cd32, #90ee90);
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .export-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(50, 205, 50, 0.4);
+        }
+
+        .export-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .export-mp4-button {
+            background: linear-gradient(45deg, #FF6347, #FF7F50);
+        }
+
+        .export-mp4-button:hover {
+            box-shadow: 0 6px 15px rgba(255, 99, 71, 0.4);
+        }
+
+        .export-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .edit-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .create-new-button {
+            background: linear-gradient(45deg, #ff8c00, #ffa500);
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .create-new-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+        }
+
+        .export-status {
+            margin: 12px 0;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            min-height: 16px;
+        }
+
+        .export-status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .export-status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .export-status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .export-progress {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            color: #ffb3d9;
+            animation: floatHearts 8s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatHearts {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(-10vh) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20vh) scale(0);
+            }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff69b4;
+            border-radius: 50%;
+            animation: sparkleAnim 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkleAnim {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Hidden canvas for recording */
+        #recordingCanvas {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .setup-container {
+                padding: 15px;
+                max-height: 95vh;
+            }
+            
+            .setup-title {
+                font-size: 18px;
+            }
+            
+            .preview-area {
+                height: 180px;
+            }
+            
+            .form-input, .form-select {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hearts" id="hearts"></div>
+        
+        <!-- Setup Mode -->
+        <div class="setup-container" id="setupContainer">
+            <div class="setup-title">🐱 Tạo Animation Mèo Cute 🐱</div>
+            
+            <!-- Drag and Drop Preview Area -->
+            <div class="preview-area" id="previewArea">
+                <!-- Draggable kitten -->
+                <div class="draggable-element draggable-kitten" id="dragKitten" style="left: 50%; bottom: 30%; transform: translateX(-50%);">
+                    🐱
+                    <span class="element-label">Mèo</span>
+                    <span class="size-indicator">60x60</span>
+                </div>
+                
+                <!-- Draggable message -->
+                <div class="draggable-element draggable-message" id="dragMessage" style="left: 50%; top: 15%; transform: translateX(-50%);">
+                    💬 Lời nhắn
+                    <span class="element-label">Lời nhắn</span>
+                    <span class="size-indicator">auto</span>
+                </div>
+                
+                <!-- Draggable effect (changes based on animation type) -->
+                <div class="draggable-element draggable-effect" id="dragEffect" style="left: 60%; bottom: 40%; transform: translateX(-50%);">
+                    🌸
+                    <span class="element-label">Hiệu ứng</span>
+                    <span class="size-indicator">30x30</span>
+                </div>
+            </div>
+            
+            <div class="position-info">
+                📌 Kéo thả để di chuyển. Dùng 2 ngón tay để phóng to/thu nhỏ trên điện thoại!
+            </div>
+            
+            <!-- Sound Controls -->
+            <div class="form-group">
+                <label class="form-label">🔊 Âm thanh hiệu ứng:</label>
+                <div class="sound-controls">
+                    <div class="sound-toggle">
+                        <span>Bật/Tắt âm thanh</span>
+                        <div class="toggle-switch" id="soundToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="volume-control">
+                        <span>🔈</span>
+                        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+                        <span>🔊</span>
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff5e6; border-radius: 8px; font-size: 11px; color: #666;">
+                        <strong>💡 Hướng dẫn thêm âm thanh:</strong><br>
+                        1. Tìm âm thanh miễn phí tại <a href="https://freesound.org" target="_blank">freesound.org</a><br>
+                        2. Hoặc upload file của bạn lên Google Drive/Dropbox<br>
+                        3. Lấy link direct download<br>
+                        4. Thay các link trong phần <code>audioFiles</code> ở code<br>
+                        <em>⚠️ Hiện đang dùng âm thanh tạm thời. Bạn cần thêm file âm thanh để có trải nghiệm tốt nhất!</em>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Form -->
+            <div class="form-group">
+                <label class="form-label">💬 Lời nhắn của bạn:</label>
+                <input type="text" id="customMessage" class="form-input" 
+                       placeholder="Nhập lời chúc ngọt ngào...">
+                <div class="file-status">Nếu không nhập, sẽ dùng lời chúc mặc định</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🎨 Chọn tone màu nền:</label>
+                <div class="color-picker-group">
+                    <div class="color-input-wrapper">
+                        <input type="color" id="color1" class="color-input" value="#ffb3d9">
+                        <span class="color-label">Màu 1</span>
+                    </div>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="color2" class="color-input" value="#fff0f8">
+                        <span class="color-label">Màu 2</span>
+                    </div>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="color3" class="color-input" value="#ffe6f2">
+                        <span class="color-label">Màu 3</span>
+                    </div>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="color4" class="color-input" value="#ffffff">
+                        <span class="color-label">Màu 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">✍️ Tùy chỉnh chữ:</label>
+                <div class="text-customization">
+                    <div class="color-input-wrapper" style="margin-bottom: 10px;">
+                        <input type="color" id="textColor" class="color-input" value="#ff69b4">
+                        <span class="color-label">Màu chữ</span>
+                    </div>
+                    <select id="fontFamily" class="form-select">
+                        <option value="Comic Sans MS">Comic Sans MS (Cute)</option>
+                        <option value="Arial">Arial (Đơn giản)</option>
+                        <option value="Times New Roman">Times New Roman (Cổ điển)</option>
+                        <option value="Courier New">Courier New (Máy chữ)</option>
+                        <option value="Georgia">Georgia (Thanh lịch)</option>
+                        <option value="Verdana">Verdana (Rõ ràng)</option>
+                        <option value="Impact">Impact (Đậm)</option>
+                        <option value="Trebuchet MS">Trebuchet MS (Hiện đại)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">✨ Chọn kiểu animation:</label>
+                <select id="animationType" class="form-select">
+                    <option value="jump">🌸 Mèo nhảy + tặng hoa</option>
+                    <option value="spin">🌀 Mèo xoay vòng vòng</option>
+                    <option value="kiss">💋 Mèo hôn</option>
+                    <option value="confused">🤔 Mèo ngu</option>
+                    <option value="explode">💥 Mèo bùng nổ</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🖼️ Chọn ảnh mèo:</label>
+                <input type="file" id="kittenFileInput" accept="image/*" style="display: none;">
+                <button type="button" class="file-button" onclick="document.getElementById('kittenFileInput').click()">
+                    📁 Chọn tệp từ máy
+                </button>
+                <div class="file-status" id="fileStatus">Chưa chọn file nào</div>
+            </div>
+            
+            <button id="startAnimation" class="start-button" disabled>
+                ✨ Bắt đầu Animation! ✨
+            </button>
+        </div>
+        
+        <!-- Export Controls -->
+        <div class="export-container" id="exportContainer" style="display: none;">
+            <div class="export-title">🎉 Animation hoàn thành! 🎉</div>
+            <button id="exportGif" class="export-button">
+                🎞️ Xuất GIF động
+            </button>
+            <button id="exportMp4" class="export-button export-mp4-button">
+                🎬 Xuất MP4 có âm thanh
+            </button>
+            <div class="export-progress" id="exportProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Đang xử lý...</div>
+            </div>
+            <div class="export-status" id="exportStatus"></div>
+            <div class="export-actions">
+                <button id="editAnimation" class="edit-button">
+                    ✏️ Chỉnh sửa
+                </button>
+                <button id="createNew" class="create-new-button">
+                    🔄 Tạo mới
+                </button>
+            </div>
+        </div>
+        
+        <!-- Animation Elements -->
+        <div class="kitten-container" id="kittenContainer">
+            <img id="kittenImage" class="kitten" alt="Cute Kitten" style="display: none;">
+            <div id="emojiKitten" class="emoji-kitten" style="display: none;">🐱</div>
+        </div>
+        
+        <div class="effect-element effect-flower">🌸</div>
+        <div class="effect-element effect-kiss">💋</div>
+        <div class="effect-element effect-confused">❓❓</div>
+        <div class="effect-element effect-explode">💥</div>
+        
+        <div class="message" id="customMessageDisplay">
+            💖 Embe dth dth mụt ngày siu bel dth nhaa 💖
+        </div>
+    </div>
+
+    <!-- Hidden canvas for recording -->
+    <canvas id="recordingCanvas"></canvas>
+
+    <script>
+        // Backend URL
+        const BACKEND_URL = 'https://1a4fe9f2-9e10-4bfe-a445-c454f8702448-00-37vuqwxgyoeab.pike.replit.dev';
+        
+        let selectedFile = null;
+        let isAnimating = false;
+        let animationData = null;
+        let soundEnabled = true;
+        let audioContext = null;
+        let masterGain = null;
+        let elementPositions = {
+            kitten: { x: 50, y: 30 },
+            message: { x: 50, y: 15 },
+            effect: { x: 60, y: 40 }
+        };
+        let elementSizes = {
+            kitten: { width: 60, height: 60 },
+            message: { width: 'auto', height: 'auto' },
+            effect: { width: 30, height: 30 }
+        };
+
+        // Audio files configuration
+        const audioFiles = {
+            jump: 'https://example.com/jump.mp3',
+            flower: 'https://example.com/flower.mp3',
+            spin: 'https://example.com/spin.mp3',
+            kiss: 'https://example.com/kiss.mp3',
+            confused: 'https://example.com/confused.mp3',
+            explode: 'https://example.com/explode.mp3',
+            message: 'https://example.com/message.mp3'
+        };
+
+        // Audio elements storage
+        const audioElements = {};
+
+        // Initialize Audio Context and preload sounds
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = 0.7;
+                
+                // Preload audio files
+                preloadAudioFiles();
+            }
+        }
+
+        // Preload audio files
+        function preloadAudioFiles() {
+            let hasValidAudio = false;
+            Object.keys(audioFiles).forEach(key => {
+                const audio = new Audio();
+                audio.src = audioFiles[key];
+                audio.volume = 0.7;
+                audioElements[key] = audio;
+                
+                // Check if URL is valid
+                if (!audioFiles[key].includes('example.com')) {
+                    hasValidAudio = true;
+                }
+            });
+            
+            // Alert user if no valid audio files
+            if (!hasValidAudio && soundEnabled) {
+                console.log('📢 Để có âm thanh thực, vui lòng thêm file âm thanh vào phần audioFiles trong code!');
+                console.log('Tìm âm thanh miễn phí tại: https://freesound.org');
+                console.log('Hoặc gửi file âm thanh của bạn để tôi hướng dẫn thêm vào.');
+            }
+        }
+
+        // Play sound effect
+        function playSound(soundName, delay = 0) {
+            if (!soundEnabled) return;
+            
+            setTimeout(() => {
+                if (audioElements[soundName]) {
+                    const audio = audioElements[soundName].cloneNode();
+                    audio.volume = masterGain.gain.value;
+                    audio.play().catch(e => {
+                        console.log('Using fallback sound for:', soundName);
+                        // Fallback to oscillator if audio file fails
+                        playFallbackSound(soundName);
+                    });
+                } else {
+                    playFallbackSound(soundName);
+                }
+            }, delay);
+        }
+
+        // Fallback oscillator sounds (nếu không load được file)
+        function playFallbackSound(soundName) {
+            if (!audioContext || !soundEnabled) return;
+            
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(masterGain);
+            
+            switch(soundName) {
+                case 'jump':
+                    osc.frequency.setValueAtTime(200, audioContext.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+                    break;
+                case 'flower':
+                case 'message':
+                    osc.type = 'sine';
+                    osc.frequency.value = 800;
+                    break;
+                case 'spin':
+                    osc.frequency.value = 400;
+                    break;
+                case 'kiss':
+                    osc.type = 'sine';
+                    osc.frequency.value = 1000;
+                    break;
+                case 'confused':
+                    osc.type = 'triangle';
+                    osc.frequency.value = 200;
+                    break;
+                case 'explode':
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 100;
+                    break;
+            }
+            
+            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Sound effects
+        const soundEffects = {
+            jump: function() {
+                playSound('jump');
+                playSound('flower', 4000); // Hoa xuất hiện sau 4s
+            },
+            
+            spin: function() {
+                playSound('spin');
+            },
+            
+            kiss: function() {
+                playSound('kiss', 3000); // Kiss sau 3s
+            },
+            
+            confused: function() {
+                playSound('confused');
+            },
+            
+            explode: function() {
+                playSound('explode', 2000); // Explosion sau 2s
+            },
+            
+            message: function() {
+                playSound('message');
+            }
+        };
+
+        // Sound toggle
+        document.getElementById('soundToggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            this.classList.toggle('active');
+            if (soundEnabled) {
+                initAudio();
+            }
+        });
+
+        // Volume control
+        document.getElementById('volumeSlider').addEventListener('input', function() {
+            const volume = this.value / 100;
+            if (masterGain) {
+                masterGain.gain.value = volume;
+            }
+            // Also update HTML audio elements
+            Object.values(audioElements).forEach(audio => {
+                if (audio) {
+                    audio.volume = volume;
+                }
+            });
+        });
+
+        // Update message preview when typing
+        document.getElementById('customMessage').addEventListener('input', function() {
+            const messageEl = document.getElementById('dragMessage');
+            const value = this.value.trim();
+            if (value) {
+                messageEl.innerHTML = `${value}<span class="element-label">Lời nhắn</span><span class="size-indicator">auto</span>`;
+            } else {
+                messageEl.innerHTML = `💬 Lời nhắn<span class="element-label">Lời nhắn</span><span class="size-indicator">auto</span>`;
+            }
+        });
+
+        // Pinch to zoom for mobile
+        function initPinchToZoom() {
+            const previewArea = document.getElementById('previewArea');
+            let activeElement = null;
+            let initialDistance = 0;
+            let initialSize = { width: 0, height: 0 };
+
+            previewArea.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    // Find which element is being touched
+                    const touch = e.touches[0];
+                    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                    activeElement = element.closest('.draggable-element');
+                    
+                    if (activeElement) {
+                        e.preventDefault();
+                        activeElement.classList.add('scaling');
+                        
+                        // Calculate initial distance between touches
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        initialDistance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Store initial size
+                        const rect = activeElement.getBoundingClientRect();
+                        initialSize = { width: rect.width, height: rect.height };
+                        
+                        // Show size indicator
+                        const sizeIndicator = activeElement.querySelector('.size-indicator');
+                        if (sizeIndicator) {
+                            sizeIndicator.style.display = 'block';
+                        }
+                    }
+                }
+            });
+
+            previewArea.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2 && activeElement) {
+                    e.preventDefault();
+                    
+                    // Calculate new distance
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Calculate scale
+                    const scale = distance / initialDistance;
+                    
+                    // Apply new size
+                    const newWidth = Math.max(30, Math.min(150, initialSize.width * scale));
+                    const newHeight = Math.max(30, Math.min(150, initialSize.height * scale));
+                    
+                    activeElement.style.width = newWidth + 'px';
+                    activeElement.style.height = newHeight + 'px';
+                    
+                    // Update font size for emoji elements
+                    if (activeElement.classList.contains('draggable-kitten') || 
+                        activeElement.classList.contains('draggable-effect')) {
+                        activeElement.style.fontSize = (newWidth * 0.8) + 'px';
+                    }
+                    
+                    // Update size indicator
+                    const sizeIndicator = activeElement.querySelector('.size-indicator');
+                    if (sizeIndicator) {
+                        sizeIndicator.textContent = `${Math.round(newWidth)}x${Math.round(newHeight)}`;
+                    }
+                    
+                    // Store size for later use
+                    const elementId = activeElement.id;
+                    if (elementId === 'dragKitten') {
+                        elementSizes.kitten = { width: newWidth, height: newHeight };
+                    } else if (elementId === 'dragEffect') {
+                        elementSizes.effect = { width: newWidth, height: newHeight };
+                    }
+                }
+            });
+
+            previewArea.addEventListener('touchend', function(e) {
+                if (activeElement) {
+                    activeElement.classList.remove('scaling');
+                    
+                    // Hide size indicator
+                    const sizeIndicator = activeElement.querySelector('.size-indicator');
+                    if (sizeIndicator) {
+                        setTimeout(() => {
+                            sizeIndicator.style.display = 'none';
+                        }, 1000);
+                    }
+                    
+                    activeElement = null;
+                }
+            });
+        }
+
+        // Drag and Drop functionality
+        function initDragAndDrop() {
+            const draggables = document.querySelectorAll('.draggable-element');
+            const previewArea = document.getElementById('previewArea');
+            const previewRect = previewArea.getBoundingClientRect();
+            
+            draggables.forEach(draggable => {
+                let isDragging = false;
+                let currentX;
+                let currentY;
+                let initialX;
+                let initialY;
+                let xOffset = 0;
+                let yOffset = 0;
+
+                const dragStart = (e) => {
+                    // Don't start drag if it's a pinch gesture
+                    if (e.type === "touchstart" && e.touches.length > 1) return;
+                    
+                    if (e.type === "touchstart") {
+                        initialX = e.touches[0].clientX - xOffset;
+                        initialY = e.touches[0].clientY - yOffset;
+                    } else {
+                        initialX = e.clientX - xOffset;
+                        initialY = e.clientY - yOffset;
+                    }
+
+                    if (e.target.closest('.draggable-element') === draggable) {
+                        isDragging = true;
+                        draggable.classList.add('dragging');
+                    }
+                };
+
+                const dragEnd = (e) => {
+                    initialX = currentX;
+                    initialY = currentY;
+                    isDragging = false;
+                    draggable.classList.remove('dragging');
+                    
+                    // Update stored positions
+                    updateStoredPositions();
+                };
+
+                const drag = (e) => {
+                    if (isDragging) {
+                        e.preventDefault();
+                        
+                        if (e.type === "touchmove") {
+                            currentX = e.touches[0].clientX - initialX;
+                            currentY = e.touches[0].clientY - initialY;
+                        } else {
+                            currentX = e.clientX - initialX;
+                            currentY = e.clientY - initialY;
+                        }
+
+                        xOffset = currentX;
+                        yOffset = currentY;
+
+                        // Get element and preview area dimensions
+                        const elementRect = draggable.getBoundingClientRect();
+                        const newPreviewRect = previewArea.getBoundingClientRect();
+                        
+                        // Calculate position relative to preview area
+                        let relativeX = elementRect.left - newPreviewRect.left + currentX;
+                        let relativeY = elementRect.top - newPreviewRect.top + currentY;
+                        
+                        // Constrain within preview area
+                        relativeX = Math.max(0, Math.min(relativeX, newPreviewRect.width - elementRect.width));
+                        relativeY = Math.max(0, Math.min(relativeY, newPreviewRect.height - elementRect.height));
+                        
+                        // Apply position
+                        draggable.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                    }
+                };
+
+                // Mouse events
+                draggable.addEventListener('mousedown', dragStart);
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('mousemove', drag);
+                
+                // Touch events
+                draggable.addEventListener('touchstart', dragStart, { passive: false });
+                document.addEventListener('touchend', dragEnd);
+                document.addEventListener('touchmove', drag, { passive: false });
+            });
+        }
+
+        function updateStoredPositions() {
+            const previewArea = document.getElementById('previewArea');
+            const previewRect = previewArea.getBoundingClientRect();
+            
+            // Update kitten position
+            const kittenEl = document.getElementById('dragKitten');
+            const kittenRect = kittenEl.getBoundingClientRect();
+            elementPositions.kitten.x = ((kittenRect.left + kittenRect.width/2 - previewRect.left) / previewRect.width) * 100;
+            elementPositions.kitten.y = 100 - ((kittenRect.top + kittenRect.height/2 - previewRect.top) / previewRect.height) * 100;
+            
+            // Update message position
+            const messageEl = document.getElementById('dragMessage');
+            const messageRect = messageEl.getBoundingClientRect();
+            elementPositions.message.x = ((messageRect.left + messageRect.width/2 - previewRect.left) / previewRect.width) * 100;
+            elementPositions.message.y = ((messageRect.top + messageRect.height/2 - previewRect.top) / previewRect.height) * 100;
+            
+            // Update effect position
+            const effectEl = document.getElementById('dragEffect');
+            const effectRect = effectEl.getBoundingClientRect();
+            elementPositions.effect.x = ((effectRect.left + effectRect.width/2 - previewRect.left) / previewRect.width) * 100;
+            elementPositions.effect.y = 100 - ((effectRect.top + effectRect.height/2 - previewRect.top) / previewRect.height) * 100;
+        }
+
+        // Handle color picker changes
+        document.querySelectorAll('.color-input').forEach(input => {
+            input.addEventListener('change', updateBackgroundColors);
+        });
+
+        function updateBackgroundColors() {
+            const color1 = document.getElementById('color1').value;
+            const color2 = document.getElementById('color2').value;
+            const color3 = document.getElementById('color3').value;
+            const color4 = document.getElementById('color4').value;
+            
+            const gradient = `linear-gradient(45deg, ${color1}, ${color2}, ${color3}, ${color4})`;
+            document.documentElement.style.setProperty('--bg-gradient', gradient);
+        }
+
+        // Handle text customization
+        document.getElementById('textColor').addEventListener('change', updateTextStyles);
+        document.getElementById('fontFamily').addEventListener('change', updateTextStyles);
+
+        function updateTextStyles() {
+            const textColor = document.getElementById('textColor').value;
+            const fontFamily = document.getElementById('fontFamily').value;
+            
+            document.documentElement.style.setProperty('--text-color', textColor);
+            document.documentElement.style.setProperty('--text-font', fontFamily);
+        }
+
+        // Handle animation type changes
+        document.getElementById('animationType').addEventListener('change', function() {
+            const animType = this.value;
+            const effectEl = document.getElementById('dragEffect');
+            const effectLabel = effectEl.querySelector('.element-label');
+            
+            // Update effect icon and label based on animation type
+            switch(animType) {
+                case 'jump':
+                    effectEl.innerHTML = '🌸<span class="element-label">Hoa</span><span class="size-indicator">30x30</span>';
+                    break;
+                case 'kiss':
+                    effectEl.innerHTML = '💋<span class="element-label">Nụ hôn</span><span class="size-indicator">30x30</span>';
+                    break;
+                case 'confused':
+                    effectEl.innerHTML = '❓<span class="element-label">Dấu hỏi</span><span class="size-indicator">30x30</span>';
+                    break;
+                case 'explode':
+                    effectEl.innerHTML = '💥<span class="element-label">Vụ nổ</span><span class="size-indicator">30x30</span>';
+                    break;
+                case 'spin':
+                    effectEl.style.display = 'none';
+                    break;
+            }
+            
+            if (animType !== 'spin') {
+                effectEl.style.display = 'flex';
+            }
+        });
+
+        // Handle file input
+        document.getElementById('kittenFileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileStatus').textContent = `Đã chọn: ${file.name}`;
+                updateStartButton();
+                
+                // Update preview with actual image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const kittenEl = document.getElementById('dragKitten');
+                    kittenEl.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"><span class="element-label">Mèo</span><span class="size-indicator">60x60</span>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateStartButton() {
+            const startButton = document.getElementById('startAnimation');
+            if (selectedFile && !isAnimating) {
+                startButton.disabled = false;
+            } else {
+                startButton.disabled = true;
+            }
+        }
+
+        // Start animation
+        document.getElementById('startAnimation').addEventListener('click', function() {
+            if (!selectedFile || isAnimating) return;
+            
+            isAnimating = true;
+            updateStartButton();
+            
+            // Initialize audio on user interaction
+            if (soundEnabled) {
+                initAudio();
+                
+                // Check if user needs to add audio files
+                if (audioFiles.jump.includes('example.com')) {
+                    console.log('💡 TIP: Bạn có thể thêm âm thanh thực cho animation!');
+                    console.log('Tìm âm thanh miễn phí tại: https://freesound.org');
+                    console.log('Hoặc gửi file âm thanh cho tôi để hướng dẫn thêm vào.');
+                }
+            }
+            
+            // Update stored positions before starting
+            updateStoredPositions();
+            
+            // Store animation data
+            const customMessageInput = document.getElementById('customMessage');
+            const userMessage = customMessageInput.value.trim();
+            const animationType = document.getElementById('animationType').value;
+            
+            animationData = {
+                file: selectedFile,
+                message: userMessage || 'Embe dth dth mụt ngày siu bel dth nhaa',
+                animationType: animationType,
+                positions: { ...elementPositions },
+                sizes: { ...elementSizes },
+                colors: {
+                    bg1: document.getElementById('color1').value,
+                    bg2: document.getElementById('color2').value,
+                    bg3: document.getElementById('color3').value,
+                    bg4: document.getElementById('color4').value,
+                    text: document.getElementById('textColor').value
+                },
+                fontFamily: document.getElementById('fontFamily').value
+            };
+            
+            // Set custom message
+            const messageDisplay = document.getElementById('customMessageDisplay');
+            if (userMessage) {
+                messageDisplay.innerHTML = `💖 ${userMessage} 💖`;
+            } else {
+                messageDisplay.innerHTML = '💖 Embe dth dth mụt ngày siu bel dth nhaa 💖';
+            }
+            // Store message content for later use
+            animationData.displayMessage = messageDisplay.innerHTML;
+            
+            // Load image and start animation
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const kittenImage = document.getElementById('kittenImage');
+                kittenImage.src = e.target.result;
+                kittenImage.style.display = 'block';
+                
+                // Hide setup and start animation
+                document.getElementById('setupContainer').style.display = 'none';
+                document.getElementById('kittenContainer').style.display = 'block';
+                
+                // Start specific animation
+                startSpecificAnimation(animationType);
+                
+                // Show export options after animation completes
+                setTimeout(() => {
+                    showExportOptions();
+                }, 12000); // Tăng thời gian để message có thời gian hiển thị
+            };
+            reader.readAsDataURL(selectedFile);
+        });
+
+        function startSpecificAnimation(animationType) {
+            const kittenContainer = document.getElementById('kittenContainer');
+            const message = document.querySelector('.message');
+            
+            // Ensure message has correct content
+            if (animationData && animationData.displayMessage) {
+                message.innerHTML = animationData.displayMessage;
+            }
+            
+            // Apply custom positions and styles
+            applyCustomStyles();
+            
+            // Reset all animation classes
+            kittenContainer.className = 'kitten-container';
+            
+            // Hide all effects first
+            document.querySelectorAll('.effect-element').forEach(el => {
+                el.classList.remove('show');
+                el.style.display = 'none';
+            });
+            
+            // Play sound effect for animation
+            if (soundEffects[animationType]) {
+                soundEffects[animationType]();
+            }
+            
+            // Apply specific animation
+            switch(animationType) {
+                case 'jump':
+                    kittenContainer.classList.add('anim-jump');
+                    setTimeout(() => {
+                        const flower = document.querySelector('.effect-flower');
+                        flower.classList.add('show');
+                        flower.style.display = 'block';
+                    }, 100);
+                    break;
+                    
+                case 'spin':
+                    kittenContainer.classList.add('anim-spin');
+                    break;
+                    
+                case 'kiss':
+                    kittenContainer.classList.add('anim-kiss');
+                    setTimeout(() => {
+                        const kiss = document.querySelector('.effect-kiss');
+                        kiss.classList.add('show');
+                        kiss.style.display = 'block';
+                    }, 100);
+                    break;
+                    
+                case 'confused':
+                    kittenContainer.classList.add('anim-confused');
+                    setTimeout(() => {
+                        const confused = document.querySelector('.effect-confused');
+                        confused.classList.add('show');
+                        confused.style.display = 'block';
+                    }, 100);
+                    break;
+                    
+                case 'explode':
+                    kittenContainer.classList.add('anim-explode');
+                    setTimeout(() => {
+                        const explode = document.querySelector('.effect-explode');
+                        explode.classList.add('show');
+                        explode.style.display = 'block';
+                    }, 100);
+                    break;
+            }
+            
+            // Show message with sound AFTER animation completes
+            setTimeout(() => {
+                message.classList.add('show');
+                message.style.display = 'block'; // Ensure it's shown
+                soundEffects.message();
+            }, 8500); // Hiển thị sau 8.5 giây (gần cuối animation)
+            
+            // Start effects
+            startEffects();
+        }
+
+        function applyCustomStyles() {
+            // Apply positions from stored data
+            const kittenContainer = document.getElementById('kittenContainer');
+            kittenContainer.style.left = elementPositions.kitten.x + '%';
+            kittenContainer.style.bottom = elementPositions.kitten.y + '%';
+            
+            // Apply size to kitten
+            kittenContainer.style.width = elementSizes.kitten.width + 'px';
+            kittenContainer.style.height = elementSizes.kitten.height + 'px';
+            
+            // Apply to message - ENSURE MESSAGE STYLES ARE APPLIED
+            const message = document.querySelector('.message');
+            const textColor = animationData.colors.text;
+            const fontFamily = animationData.fontFamily;
+            
+            message.style.top = elementPositions.message.y + '%';
+            message.style.left = elementPositions.message.x + '%';
+            message.style.color = textColor;
+            message.style.fontFamily = fontFamily;
+            message.style.display = 'none'; // Initially hidden
+            
+            // Apply to effects
+            const animationType = animationData.animationType;
+            let effectElement;
+            
+            switch(animationType) {
+                case 'jump':
+                    effectElement = document.querySelector('.effect-flower');
+                    break;
+                case 'kiss':
+                    effectElement = document.querySelector('.effect-kiss');
+                    break;
+                case 'confused':
+                    effectElement = document.querySelector('.effect-confused');
+                    break;
+                case 'explode':
+                    effectElement = document.querySelector('.effect-explode');
+                    break;
+            }
+            
+            if (effectElement) {
+                effectElement.style.left = elementPositions.effect.x + '%';
+                effectElement.style.bottom = elementPositions.effect.y + '%';
+                effectElement.style.fontSize = elementSizes.effect.width + 'px';
+            }
+        }
+
+        function showExportOptions() {
+            document.getElementById('exportContainer').style.display = 'block';
+        }
+
+        function startEffects() {
+            const heartInterval = setInterval(createHeart, 800);
+            const sparkleInterval = setInterval(createSparkle, 300);
+            
+            setTimeout(() => {
+                clearInterval(heartInterval);
+                clearInterval(sparkleInterval);
+                isAnimating = false;
+            }, 12000);
+        }
+
+        // Export to GIF
+        document.getElementById('exportGif').addEventListener('click', async function() {
+            const exportButton = document.getElementById('exportGif');
+            const exportStatus = document.getElementById('exportStatus');
+            const exportProgress = document.getElementById('exportProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            exportButton.disabled = true;
+            exportStatus.className = 'export-status loading';
+            exportStatus.textContent = '📱 Đang chuẩn bị tạo GIF động...';
+            exportProgress.style.display = 'block';
+            
+            try {
+                // Restart animation for recording
+                await restartAnimationForGIF();
+                
+                // Create GIF using gif.js
+                const gif = new GIF({
+                    workers: 2,
+                    quality: 10,
+                    width: 480,
+                    height: 360,
+                    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+                });
+
+                // Capture frames
+                const totalFrames = 45; // Tăng lên 45 frame để ghi cả lời nhắn
+                const frameDelay = 250; // ms between frames
+                
+                for (let i = 0; i < totalFrames; i++) {
+                    await new Promise(resolve => setTimeout(resolve, frameDelay));
+                    
+                    // Update progress
+                    const progress = ((i + 1) / totalFrames) * 100;
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = `Đang ghi hình: ${Math.round(progress)}%`;
+                    
+                    // Capture current state
+                    const canvas = await captureFrame();
+                    gif.addFrame(canvas, { delay: frameDelay });
+                }
+                
+                progressText.textContent = 'Đang xử lý GIF...';
+                
+                // Render GIF
+                gif.on('finished', function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cute-kitten-${animationData.animationType}-animated.gif`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    exportStatus.className = 'export-status success';
+                    exportStatus.textContent = '✅ GIF động đã được tải về!';
+                    exportProgress.style.display = 'none';
+                    exportButton.disabled = false;
+                });
+                
+                gif.on('error', function(error) {
+                    throw error;
+                });
+                
+                gif.render();
+                
+            } catch (error) {
+                console.error('Error creating GIF:', error);
+                exportStatus.className = 'export-status error';
+                exportStatus.textContent = '❌ Lỗi tạo GIF. Vui lòng thử lại.';
+                exportProgress.style.display = 'none';
+                exportButton.disabled = false;
+            }
+        });
+
+        // Export to MP4 with backend
+        document.getElementById('exportMp4').addEventListener('click', async function() {
+            const exportButton = document.getElementById('exportMp4');
+            const exportStatus = document.getElementById('exportStatus');
+            const exportProgress = document.getElementById('exportProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            exportButton.disabled = true;
+            exportStatus.className = 'export-status loading';
+            exportStatus.textContent = '🎬 Đang chuẩn bị xuất video MP4...';
+            exportProgress.style.display = 'block';
+            
+            try {
+                // Restart animation for recording
+                await restartAnimationForGIF();
+                
+                // Capture frames as base64
+                const frames = [];
+                const totalFrames = 45;
+                const frameDelay = 250;
+                
+                for (let i = 0; i < totalFrames; i++) {
+                    await new Promise(resolve => setTimeout(resolve, frameDelay));
+                    
+                    // Update progress
+                    const progress = ((i + 1) / totalFrames) * 50; // First 50% for capturing
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = `Đang ghi hình: ${Math.round(progress)}%`;
+                    
+                    // Capture current state
+                    const canvas = await captureFrame();
+                    frames.push(canvas.toDataURL('image/png'));
+                }
+                
+                progressText.textContent = 'Đang gửi dữ liệu lên server...';
+                
+                // Prepare animation data for backend
+                const requestData = {
+                    frames: frames,
+                    animationType: animationData.animationType,
+                    message: animationData.displayMessage,
+                    duration: totalFrames * frameDelay / 1000, // Duration in seconds
+                    audioFiles: soundEnabled ? audioFiles : null
+                };
+                
+                // Send to backend
+                const response = await fetch(`${BACKEND_URL}/export-video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.statusText);
+                }
+                
+                progressFill.style.width = '80%';
+                progressText.textContent = 'Server đang xử lý video...';
+                
+                // Get video file
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cute-kitten-${animationData.animationType}-video.mp4`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                exportStatus.className = 'export-status success';
+                exportStatus.textContent = '✅ Video MP4 đã được tải về!';
+                exportProgress.style.display = 'none';
+                exportButton.disabled = false;
+                
+            } catch (error) {
+                console.error('Error creating MP4:', error);
+                exportStatus.className = 'export-status error';
+                exportStatus.innerHTML = '❌ Lỗi kết nối server.<br>Vui lòng thử lại sau hoặc dùng GIF.';
+                exportProgress.style.display = 'none';
+                exportButton.disabled = false;
+            }
+        });
+
+        async function restartAnimationForGIF() {
+            document.getElementById('exportContainer').style.display = 'none';
+            
+            const kittenContainer = document.getElementById('kittenContainer');
+            const message = document.querySelector('.message');
+            
+            // Reset classes
+            kittenContainer.className = 'kitten-container';
+            message.classList.remove('show');
+            message.style.display = 'none'; // Ensure message is hidden
+            
+            // Hide all effects
+            document.querySelectorAll('.effect-element').forEach(el => {
+                el.classList.remove('show');
+                el.style.display = 'none';
+            });
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Restart animation without sound
+            const tempSound = soundEnabled;
+            soundEnabled = false;
+            startSpecificAnimation(animationData.animationType);
+            soundEnabled = tempSound;
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        async function captureFrame() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.querySelector('.container');
+            
+            canvas.width = 480;
+            canvas.height = 360;
+            
+            // Draw background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, animationData.colors.bg1);
+            gradient.addColorStop(0.33, animationData.colors.bg2);
+            gradient.addColorStop(0.66, animationData.colors.bg3);
+            gradient.addColorStop(1, animationData.colors.bg4);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw kitten
+            const kittenImg = document.getElementById('kittenImage');
+            if (kittenImg && kittenImg.src) {
+                const kittenContainer = document.getElementById('kittenContainer');
+                const rect = container.getBoundingClientRect();
+                const kittenRect = kittenContainer.getBoundingClientRect();
+                
+                // Get computed transform
+                const transform = window.getComputedStyle(kittenContainer).transform;
+                ctx.save();
+                
+                const x = (kittenRect.left - rect.left) * (canvas.width / rect.width);
+                const y = (kittenRect.top - rect.top) * (canvas.height / rect.height);
+                const w = kittenRect.width * (canvas.width / rect.width);
+                const h = kittenRect.height * (canvas.height / rect.height);
+                
+                ctx.drawImage(kittenImg, x, y, w, h);
+                ctx.restore();
+            }
+            
+            // Draw visible effects
+            const effects = document.querySelectorAll('.effect-element.show');
+            effects.forEach(effect => {
+                if (effect.style.display !== 'none' && effect.style.opacity !== '0') {
+                    const rect = container.getBoundingClientRect();
+                    const effectRect = effect.getBoundingClientRect();
+                    const x = (effectRect.left - rect.left + effectRect.width/2) * (canvas.width / rect.width);
+                    const y = (effectRect.top - rect.top + effectRect.height/2) * (canvas.height / rect.height);
+                    
+                    const size = elementSizes.effect.width * (canvas.width / rect.width);
+                    ctx.font = size + 'px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(effect.textContent, x, y);
+                }
+            });
+            
+            // Draw message if visible
+            const message = document.querySelector('.message');
+            if (message && message.classList.contains('show')) {
+                const rect = container.getBoundingClientRect();
+                const messageRect = message.getBoundingClientRect();
+                const x = (messageRect.left - rect.left + messageRect.width/2) * (canvas.width / rect.width);
+                const y = (messageRect.top - rect.top + messageRect.height/2) * (canvas.height / rect.height);
+                
+                ctx.font = '20px ' + animationData.fontFamily;
+                ctx.fillStyle = animationData.colors.text;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(message.textContent, x, y);
+            }
+            
+            // Draw some hearts
+            const hearts = document.querySelectorAll('.heart');
+            hearts.forEach(heart => {
+                const rect = container.getBoundingClientRect();
+                const heartRect = heart.getBoundingClientRect();
+                if (heartRect.top > rect.top && heartRect.top < rect.bottom) {
+                    const x = (heartRect.left - rect.left + heartRect.width/2) * (canvas.width / rect.width);
+                    const y = (heartRect.top - rect.top + heartRect.height/2) * (canvas.height / rect.height);
+                    
+                    ctx.font = '16px Arial';
+                    ctx.fillStyle = '#ffb3d9';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('💕', x, y);
+                }
+            });
+            
+            return canvas;
+        }
+
+        // Edit animation
+        document.getElementById('editAnimation').addEventListener('click', function() {
+            document.getElementById('exportContainer').style.display = 'none';
+            document.getElementById('setupContainer').style.display = 'block';
+            document.getElementById('kittenContainer').style.display = 'none';
+            
+            // Reset animation state
+            isAnimating = false;
+            updateStartButton();
+        });
+
+        // Create new animation
+        document.getElementById('createNew').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // Create floating hearts
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '💕';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.animationDelay = Math.random() * 8 + 's';
+            heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            document.getElementById('hearts').appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 8000);
+        }
+
+        // Create sparkles
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = (45 + Math.random() * 20) + '%';
+            sparkle.style.top = (40 + Math.random() * 20) + '%';
+            sparkle.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 2000);
+        }
+
+        // Add click interaction
+        document.addEventListener('click', (e) => {
+            if (document.getElementById('exportContainer').style.display !== 'none') return;
+            
+            for(let i = 0; i < 5; i++) {
+                setTimeout(createHeart, i * 100);
+                setTimeout(createSparkle, i * 50);
+            }
+        });
+
+        // Initialize app
+        function initializeApp() {
+            updateBackgroundColors();
+            updateTextStyles();
+            initDragAndDrop();
+            initPinchToZoom();
+            
+            // Set sound toggle to active by default
+            document.getElementById('soundToggle').classList.add('active');
+            
+            // Trigger initial animation type
+            document.getElementById('animationType').dispatchEvent(new Event('change'));
+        }
+
+        // Start initialization
+        initializeApp();
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "cute-kitten-animation-backend-simple",
+  "version": "1.0.0",
+  "description": "Simple backend server for Cute Kitten Animation GIF export",
+  "main": "server-simple.js",
+  "scripts": {
+    "start": "node server-simple.js",
+    "dev": "nodemon server-simple.js"
+  },
+  "keywords": ["animation", "export", "gif"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "canvas": "^2.11.2",
+    "gifencoder": "^2.0.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Cute Kitten Backend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ff69b4;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ff1493;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .preview img {
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐱 Test Cute Kitten Backend API 🐱</h1>
+        
+        <div class="test-section">
+            <h2>Server Configuration</h2>
+            <input type="text" id="serverUrl" placeholder="Enter server URL (e.g., https://your-server.replit.dev)" value="http://localhost:3000">
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test GIF Export</h2>
+            <p>This will create a simple test GIF with colored frames.</p>
+            <button onclick="testGifExport()">Test GIF Export</button>
+            <div id="gifStatus" class="status" style="display: none;"></div>
+            <div id="gifPreview" class="preview"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Video Export</h2>
+            <p>This will test the video export endpoint (may return GIF on simple server).</p>
+            <button onclick="testVideoExport()">Test Video Export</button>
+            <div id="videoStatus" class="status" style="display: none;"></div>
+            <div id="videoPreview" class="preview"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Server Health</h2>
+            <button onclick="checkHealth()">Check Server Health</button>
+            <div id="healthStatus" class="status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function getServerUrl() {
+            const url = document.getElementById('serverUrl').value.trim();
+            return url.endsWith('/') ? url.slice(0, -1) : url;
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+            statusEl.style.display = 'block';
+        }
+
+        async function testConnection() {
+            const serverUrl = getServerUrl();
+            showStatus('connectionStatus', 'Testing connection...', 'loading');
+            
+            try {
+                const response = await fetch(serverUrl);
+                const data = await response.json();
+                showStatus('connectionStatus', 
+                    `✅ Connected! Server: ${data.message}\nEndpoints: ${JSON.stringify(data.endpoints, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showStatus('connectionStatus', 
+                    `❌ Connection failed: ${error.message}\nMake sure the server is running and CORS is enabled.`, 
+                    'error'
+                );
+            }
+        }
+
+        function createTestFrames(count = 10) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            const frames = [];
+
+            for (let i = 0; i < count; i++) {
+                // Clear canvas
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, 200, 200);
+
+                // Draw animated circle
+                const progress = i / count;
+                const x = 100 + Math.cos(progress * Math.PI * 2) * 50;
+                const y = 100 + Math.sin(progress * Math.PI * 2) * 50;
+                
+                // Background gradient
+                const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
+                gradient.addColorStop(0, `hsl(${progress * 360}, 100%, 90%)`);
+                gradient.addColorStop(1, `hsl(${progress * 360}, 100%, 70%)`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 200, 200);
+
+                // Draw circle
+                ctx.fillStyle = '#ff69b4';
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Add text
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Test Frame ' + (i + 1), 100, 180);
+
+                // Convert to base64
+                frames.push(canvas.toDataURL('image/png'));
+            }
+
+            return frames;
+        }
+
+        async function testGifExport() {
+            const serverUrl = getServerUrl();
+            showStatus('gifStatus', 'Creating test GIF...', 'loading');
+            document.getElementById('gifPreview').innerHTML = '';
+
+            try {
+                const frames = createTestFrames(10);
+                
+                const response = await fetch(`${serverUrl}/export-gif`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        frames: frames,
+                        width: 200,
+                        height: 200,
+                        delay: 100
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Export failed');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                showStatus('gifStatus', 
+                    `✅ GIF created successfully! Size: ${(blob.size / 1024).toFixed(2)}KB`, 
+                    'success'
+                );
+                
+                document.getElementById('gifPreview').innerHTML = 
+                    `<img src="${url}" alt="Test GIF"><br>
+                     <a href="${url}" download="test.gif">Download GIF</a>`;
+                     
+            } catch (error) {
+                showStatus('gifStatus', `❌ GIF export failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVideoExport() {
+            const serverUrl = getServerUrl();
+            showStatus('videoStatus', 'Creating test video...', 'loading');
+            document.getElementById('videoPreview').innerHTML = '';
+
+            try {
+                const frames = createTestFrames(30); // More frames for video
+                
+                const response = await fetch(`${serverUrl}/export-video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        frames: frames,
+                        animationType: 'test',
+                        message: 'Test Animation',
+                        duration: 3,
+                        width: 200,
+                        height: 200
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Export failed');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const isVideo = blob.type.includes('video');
+                
+                showStatus('videoStatus', 
+                    `✅ ${isVideo ? 'Video' : 'GIF'} created successfully! Size: ${(blob.size / 1024).toFixed(2)}KB`, 
+                    'success'
+                );
+                
+                if (isVideo) {
+                    document.getElementById('videoPreview').innerHTML = 
+                        `<video src="${url}" controls style="max-width: 300px;"></video><br>
+                         <a href="${url}" download="test.mp4">Download Video</a>`;
+                } else {
+                    document.getElementById('videoPreview').innerHTML = 
+                        `<img src="${url}" alt="Test GIF"><br>
+                         <a href="${url}" download="test.gif">Download GIF</a>
+                         <p><small>Note: Server returned GIF instead of video</small></p>`;
+                }
+                     
+            } catch (error) {
+                showStatus('videoStatus', `❌ Video export failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkHealth() {
+            const serverUrl = getServerUrl();
+            showStatus('healthStatus', 'Checking server health...', 'loading');
+            
+            try {
+                const response = await fetch(`${serverUrl}/health`);
+                const data = await response.json();
+                
+                const memory = data.memory ? 
+                    `Memory: ${(data.memory.heapUsed / 1024 / 1024).toFixed(2)}MB / ${(data.memory.heapTotal / 1024 / 1024).toFixed(2)}MB` : 
+                    '';
+                const uptime = data.uptime ? 
+                    `Uptime: ${Math.floor(data.uptime / 60)} minutes` : 
+                    '';
+                
+                showStatus('healthStatus', 
+                    `✅ Server is healthy!\nStatus: ${data.status}\nTime: ${data.timestamp}\n${memory}\n${uptime}`, 
+                    'success'
+                );
+            } catch (error) {
+                showStatus('healthStatus', 
+                    `❌ Health check failed: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        // Auto-detect if running locally
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            document.getElementById('serverUrl').value = `http://localhost:3000`;
+        }
+    </script>
+</body>
+</html>
